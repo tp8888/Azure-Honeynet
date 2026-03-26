@@ -125,3 +125,5 @@ As new campaigns and threat actors are identified within the honeynet, detailed 
 * [🚨 Threat Brief: Database & Remote Desktop Credential Harvesting (Heralding)](Threat-Briefs/Heralding_Database_Attacks.md)
 
 ---
+
+* [🚨 Threat Brief: Unauthenticated File Shares & Malware Droppers (Dionaea)](Threat-Briefs/Dionaea_Malware_Traps.md)
