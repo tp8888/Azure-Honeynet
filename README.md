@@ -53,7 +53,7 @@ Following a successful brute-force attack (`root/root`) by a South Korean IP add
 ---
 
 ## 🔬 Advanced Forensics: Multi-Actor Post-Exploitation Analysis
-Extended monitoring of the honeynet's `input` logs revealed that the infrastructure was targeted by multiple distinct threat actors, each with specialized post-exploitation playbooks. Below is a behavioral analysis of four unique attacker profiles captured in the environment.
+Extended monitoring of the honeynet's logs revealed that the infrastructure was targeted by multiple distinct threat actors, each with specialized post-exploitation playbooks. Below is a behavioral analysis of five unique attacker profiles captured in the environment.
 
 ### 1. The Persistent Backdoor Installer (Defense Evasion)
 This threat actor attempted to establish a persistent, unremovable backdoor using Linux file attributes and encoded Command & Control (C2) signaling.
@@ -102,5 +102,17 @@ This botnet blindly executes commands designed to exploit poorly secured enterpr
 * **Hardware Breakout:** The sequence `enable -> system -> shell` is the exact command path required to break out of the restricted command-line interface (CLI) of specific enterprise routers (e.g., Cisco, MikroTik) and drop into the underlying root shell.
 * **Malware Delivery:** Once the shell is assumed active, the bot uses `wget` to pull down an executable payload, modifies the permissions, and attempts to run it.
 
+### 5. The "Blind" Web Scanner (Protocol Confusion)
+Not all attacks are targeted; many are spray-and-pray vulnerability scanners that do not verify the underlying service running on a port.
+
+**Raw Log Capture:**
+`Username: GET / HTTP/1.1`
+`Password: Host: 20.48.229.199:23`
+`User-Agent: visionheight.com/scan Mozilla/5.0...`
+
+**Forensic Breakdown:**
+* **Protocol Collision:** This bot is a blind web scanner looking for vulnerable HTTP/HTTPS services. It blindly threw a standard web browser request (`HTTP GET`) at Port 22. 
+* **Sensor Interpretation:** Because Cowrie is simulating an SSH server, it does not understand HTTP. It simply parsed the first incoming string as the "username" and the second string as the "password," cleanly demonstrating how automated scanners create noisy, malformed logs when hitting unexpected protocols.
+
 ### Threat Intelligence Takeaway
-This multi-actor analysis illustrates that relying solely on strong passwords is insufficient. Modern cloud assets face simultaneous threats from cryptominers, data brokers, and IoT botnets. Effective defense requires Defense-in-Depth, including strict network segmentation, File Integrity Monitoring (FIM), and behavioral alerting.
+This multi-actor analysis illustrates that relying solely on strong passwords is insufficient. Modern cloud assets face simultaneous threats from cryptominers, data brokers, IoT botnets, and blind web scanners. Effective defense requires Defense-in-Depth, including strict network segmentation, File Integrity Monitoring (FIM), and behavioral alerting.
