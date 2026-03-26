@@ -52,9 +52,38 @@ Following a successful brute-force attack (`root/root`) by a South Korean IP add
 
 ---
 
-## 🔬 IV. Advanced Forensics: Persistence & Defense Evasion
-Extended monitoring captured advanced post-exploitation playbooks. One notable capture involved a distinct threat actor attempting to establish a persistent, unremovable backdoor using Linux file attributes and encoded Command & Control (C2) signaling.
+## 🔬 Advanced Forensics: Establishing Persistence & Defense Evasion
+In addition to analyzing initial access vectors, the honeynet captured advanced post-exploitation playbooks. One notable capture involved an automated threat actor attempting to establish a persistent, unremovable backdoor using Linux file attributes and encoded Command & Control (C2) signaling.
 
-**Raw Log Capture:**
-```bash
+Raw Log Capture:
+
+Bash
 chmod +x clean.sh; sh clean.sh; rm -rf clean.sh; chmod +x setup.sh; sh setup.sh; rm -rf setup.sh; mkdir -p ~/.ssh; chattr -ia ~/.ssh/authorized_keys; echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCqHrvnL...[truncated]... rsa-key-20230629" > ~/.ssh/authorized_keys; chattr +ai ~/.ssh/authorized_keys; uname -a; echo -e "\x61\x75\x74\x68\x5F\x6F\x6B\x0A"
+Forensic Breakdown of the Attack Chain
+1. Pre-Execution Cleanup
+Command: chmod +x clean.sh; sh clean.sh; rm -rf clean.sh
+
+Analysis: The attacker first executes a cleanup script to potentially kill competing malware (like other crypto-miners) and then immediately deletes the script (rm -rf) to minimize their forensic footprint on the disk.
+
+2. Environment Preparation
+Command: mkdir -p ~/.ssh; chattr -ia ~/.ssh/authorized_keys;
+
+Analysis: The bot creates the SSH directory. Crucially, it runs chattr -ia on the authorized_keys file before attempting to write to it. This strips any existing "immutable" or "append-only" protections that a system administrator might have previously set.
+
+3. Key Injection (Persistence)
+Command: echo "ssh-rsa AAAAB3N..." > ~/.ssh/authorized_keys
+
+Analysis: The attacker injects their own public RSA key into the system's authorized keys. This grants them permanent, passwordless SSH access to the compromised machine, ensuring they retain control even if the original compromised password (root/root) is changed.
+
+4. Defense Evasion
+Command: chattr +ai ~/.ssh/authorized_keys
+
+Analysis: Once the malicious key is injected, the attacker uses the chattr utility to add the +a (append-only) and +i (immutable) attributes to the file. This is a classic defense evasion technique; it prevents standard users—and even the root user—from easily deleting or modifying the file without first knowing to remove the attribute.
+
+5. C2 Signaling & Obfuscation
+Command: echo -e "\x61\x75\x74\x68\x5F\x6F\x6B\x0A"
+
+Analysis: The execution concludes by echoing a hex-encoded string. When decoded, this translates to auth_ok\n. This acts as a beacon back to the attacker's Command and Control server, confirming that the backdoor was successfully installed and the node is ready to receive further instructions.
+
+Threat Intelligence Takeaway
+This sequence perfectly illustrates the necessity of behavioral monitoring and File Integrity Monitoring (FIM). Relying solely on password rotation is insufficient if an attacker has already manipulated kernel-level file attributes to guarantee their own persistent access.
