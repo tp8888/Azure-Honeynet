@@ -116,3 +116,11 @@ Not all attacks are targeted; many are spray-and-pray vulnerability scanners tha
 
 ### Threat Intelligence Takeaway
 This multi-actor analysis illustrates that relying solely on strong passwords is insufficient. Modern cloud assets face simultaneous threats from cryptominers, data brokers, IoT botnets, and blind web scanners. Effective defense requires Defense-in-Depth, including strict network segmentation, File Integrity Monitoring (FIM), and behavioral alerting.
+---
+
+## 📂 VII. Published Threat Intelligence Briefs
+As new campaigns and threat actors are identified within the honeynet, detailed forensic briefs are published below:
+
+* [🚨 Threat Brief: Database & Remote Desktop Credential Harvesting (Heralding)](Threat-Briefs/Heralding_Database_Attacks.md)
+
+---
