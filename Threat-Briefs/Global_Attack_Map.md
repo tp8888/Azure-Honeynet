@@ -8,7 +8,7 @@
 To provide high-level, actionable intelligence regarding the origins of automated attacks against the Azure Honeynet, I built a dynamic Global Attack Map utilizing Kibana's geospatial mapping capabilities. This visualization aggregates thousands of raw security logs and plots them dynamically based on their geographic point of origin.
 
 ![Global Attack Map Full](../images/global_attack_map_full.png)
-> *High-Level Distribution: Over 77,000 attacks visualized globally over a 7-day period.*
+> *High-Level Distribution: Over 110,000 automated attacks visualized globally over a 7-day period.*
 
 ## 1. The Mechanics: GeoIP Enrichment
 Raw network traffic only provides an IP address (e.g., `73.135.69.230`), which inherently lacks geographic context. To build this map, I relied on the SIEM's ingestion pipeline (Logstash). As each attack hits the honeynet, the pipeline intercepts the raw log, extracts the `src_ip`, and queries it against a GeoIP database. The pipeline then enriches the log by appending a new field—`geoip.location`—which contains the physical latitude and longitude of the attacker's ISP.
