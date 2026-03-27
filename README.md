@@ -135,3 +135,6 @@ As new campaigns and threat actors are identified within the honeynet, detailed 
   
   
 * [🔄 Threat Hunt: Application-Layer Protocol Confusion](Threat-Briefs/API_Protocol_Confusion.md)
+  
+
+*  [🌍 Global Attack Map: Geographic Threat Distribution](Threat-Briefs/Global_Attack_Map.md)
