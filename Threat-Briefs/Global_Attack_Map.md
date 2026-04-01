@@ -1,6 +1,7 @@
 # 🌍 Global Attack Map: Geographic Threat Distribution
 
 * **Date:** March 2026
+* **Analyst:** Thomas Price  
 * **Data Sources:** Dionaea, Cowrie, Heralding (Aggregated)
 * **Objective:** Visualizing Threat Origin via GeoIP Enrichment
 
