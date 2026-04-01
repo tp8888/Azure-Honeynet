@@ -1,6 +1,7 @@
 # 🔄 Threat Hunt: Application-Layer Protocol Confusion
 
 * **Date:** March 2026
+* **Analyst:** Thomas Price  
 * **Primary Sensor:** Cowrie (SSH/Telnet)
 * **Targeted Port:** 22 (SSH)
 * **Payload:** `<se:Body>` (XML / SOAP Envelope)
