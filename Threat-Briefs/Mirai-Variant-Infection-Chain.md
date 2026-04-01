@@ -1,7 +1,7 @@
 # 🍯 Threat Brief: Mirai Variant Infection Chain Analysis
 
 **Date:** April 2026  
-**Analyst:** Thomas  
+**Analyst:** Thomas Price    
 **Targeted Service:** SSH/Telnet  
 **Honeypot Sensor:** T-Pot (Cowrie)  
 
