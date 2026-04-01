@@ -2,8 +2,8 @@
 
 **Date:** March 2026
 **Analyst:** Thomas Price  
-**Sensor:** Heralding (Credential Catching Honeypot)
-**Targeted Services:** PostgreSQL (TCP/5432), VNC (TCP/5900)
+**Sensor:** Heralding (Credential Catching Honeypot)  
+**Targeted Services:** PostgreSQL (TCP/5432), VNC (TCP/5900)  
 
 ## Overview
 While analyzing the honeynet telemetry, a secondary campaign of automated credential harvesting was identified. Unlike the SSH brute-force attacks captured by Cowrie, this traffic was specifically directed at the **Heralding** sensor, which simulates exposed enterprise databases and remote desktop services.
