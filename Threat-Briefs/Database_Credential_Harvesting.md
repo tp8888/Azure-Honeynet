@@ -1,6 +1,7 @@
 # 🗄️ Threat Hunt: Database Credential Harvesting & `sa` Targeting
 
 * **Date:** March 2026
+* **Analyst:** Thomas Price  
 * **Primary Sensors:** Heralding, Dionaea
 * **Targeted Ports:** 1433 (MSSQL), 3306 (MySQL), 5432 (PostgreSQL)
 * **Objective:** Unauthorized Database Access & Remote Code Execution
